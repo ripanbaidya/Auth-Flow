@@ -1,0 +1,7 @@
+Hello!
+Welcome to AuthFlow!
+
+Your OTP is: [[${otp}]].
+
+It is valid for 5 minutes.
+Do not share it with anyone.

@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:17.6
+    container_name: auth_flow_postgresql
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - auth_flow_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  auth_flow_network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

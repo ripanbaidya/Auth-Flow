@@ -1,0 +1,76 @@
+# port configuration
+server:
+  port: 8000
+
+  # servlet path configuration
+  servlet:
+    context-path: /api/v1
+
+spring:
+  # application name
+  application:
+    name: Auth-Flow
+
+  # database configuration
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  # jpa configuration
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  # mail configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${APP_EMAIL}
+    password: ${APP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# jwt configuration
+application:
+  security:
+    jwt:
+      header: Authorization
+      secret-key: 0n2f3j320c2n029j302jc09h2309cn232in02j9nc02c20n20nfknkhf920kjnsvna
+      expiration: 86400000 # 24 hours
+  cors:
+    allowed-origins:
+      - http://localhost:3000
+      - http://localhost:5173
+      # - https://your-frontend-url.com # use it for production
+
+# otp configuration
+otp:
+  expiry:
+    seconds: 300 # OTP TTL in seconds (5 minutes)
+  resend:
+    interval:
+      seconds: 60 # Minimum seconds between subsequent sends
+
+# twilio-sms config
+twilio:
+  accountSid: ${TWILIO_ACCOUNT_SID}
+  authToken: ${TWILIO_AUTH_TOKEN}
+  phoneNumber: ${TWILIO_PHONE_NUMBER}
+
+
+# logging
+logging:
+  level:
+    com.astrobrains.authflow.service.impl: DEBUG
