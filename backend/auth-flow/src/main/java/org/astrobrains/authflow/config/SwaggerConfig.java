@@ -11,7 +11,6 @@ public class SwaggerConfig {
 
     /**
      * This method returns an OpenAPI object that is used to generate the API documentation.
-     * @return OpenAPI
      */
     @Bean
     public OpenAPI customOpenAPI() {

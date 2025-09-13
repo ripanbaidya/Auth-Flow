@@ -3,28 +3,26 @@ package org.astrobrains.authflow.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.astrobrains.authflow.dto.ApiResponse;
-import org.astrobrains.authflow.dto.request.auth.CustomerSignupRequest;
-import org.astrobrains.authflow.dto.request.auth.SellerSignupRequest;
-import org.astrobrains.authflow.dto.request.otp.SendOTPRequest;
-import org.astrobrains.authflow.dto.request.otp.VerifyOTPRequest;
-import org.astrobrains.authflow.dto.response.auth.CustomerSignupResponse;
-import org.astrobrains.authflow.dto.response.auth.SellerSignupResponse;
-import org.astrobrains.authflow.dto.response.otp.SendOTPResponse;
-import org.astrobrains.authflow.dto.response.otp.VerifyOTPFailResponse;
-import org.astrobrains.authflow.dto.response.otp.VerifyOTPSuccessResponse;
-import org.astrobrains.authflow.enums.AccountStatus;
-import org.astrobrains.authflow.enums.UserRole;
-import org.astrobrains.authflow.model.Seller;
 import org.astrobrains.authflow.model.User;
+import org.astrobrains.authflow.response.ApiResponse;
+import org.astrobrains.authflow.request.auth.CustomerSignupRequest;
+import org.astrobrains.authflow.request.auth.SellerSignupRequest;
+import org.astrobrains.authflow.request.otp.SendOTPRequest;
+import org.astrobrains.authflow.request.otp.VerifyOTPRequest;
+import org.astrobrains.authflow.response.auth.CustomerSignupResponse;
+import org.astrobrains.authflow.response.auth.SellerSignupResponse;
+import org.astrobrains.authflow.response.otp.SendOTPResponse;
+import org.astrobrains.authflow.response.otp.VerifyOTPFailResponse;
+import org.astrobrains.authflow.response.otp.VerifyOTPSuccessResponse;
+import org.astrobrains.authflow.enums.Role;
+import org.astrobrains.authflow.model.Seller;
 import org.astrobrains.authflow.model.VerificationCode;
 import org.astrobrains.authflow.repository.SellerRepository;
 import org.astrobrains.authflow.repository.UserRepository;
 import org.astrobrains.authflow.repository.VerificationCodeRepository;
 import org.astrobrains.authflow.security.JwtProvider;
 import org.astrobrains.authflow.service.AuthService;
-import org.astrobrains.authflow.service.EmailService;
-import org.astrobrains.authflow.service.TwilioSmsService;
+import org.astrobrains.authflow.service.TwilioService;
 import org.astrobrains.authflow.util.OtpUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -55,10 +53,10 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
     private final PasswordEncoder passwordEncoder;
-    private final TwilioSmsService twilioSmsService;
+    private final TwilioService twilioService;
     private final CustomUserDetailsServiceImpl customUserService;
     private final JwtProvider jwtProvider;
-    private final EmailService emailService;
+    private final EmailServiceImpl emailServiceImpl;
 
     @Value("${otp.expiry.seconds:" + DEFAULT_EXPIRY + "}")
     private long otpExpirySeconds;
@@ -79,7 +77,6 @@ public class AuthServiceImpl implements AuthService {
             log.debug("Either email or phone number is required");
             return new ApiResponse<>(false, "Either email or phone number is required", null);
         }
-        log.info("email / number {}", request.getEmail() != null ? request.getEmail() : request.getPhoneNumber());
         Instant now = Instant.now();
         String otp = OtpUtil.generateOtp();
         Instant expiresAt = now.plusSeconds(otpExpirySeconds); // 5 minutes
@@ -95,7 +92,6 @@ public class AuthServiceImpl implements AuthService {
                 identifier = request.getPhoneNumber().trim();
                 existing = verificationCodeRepository.findByPhoneNumber(identifier);
             }
-            log.debug("identifies {}", identifier);
 
             // Throttle / prevent spam
             if (existing != null && existing.getExpiresAt() != null && existing.getExpiresAt().isAfter(now)) {
@@ -120,7 +116,6 @@ public class AuthServiceImpl implements AuthService {
                     .createdAt(now)
                     .expiresAt(expiresAt)
                     .build();
-            log.debug("verification information {}", v);
 
             userRepository.findByEmail(v.getEmail()).ifPresent(v::setUser);
             sellerRepository.findByEmail(v.getEmail()).ifPresent(v::setSeller);
@@ -128,14 +123,14 @@ public class AuthServiceImpl implements AuthService {
 
             // Decide sending channel
             if (v.getEmail() != null) {
-                emailService.sendVerificationOtpEmail(
+                emailServiceImpl.sendVerificationOtpEmail(
                         v.getEmail(),
                         otp,
                         "Welcome to AuthFlow!",
                         "Your Verification Code is: " + otp
                 );
             } else if (v.getPhoneNumber() != null) {
-                twilioSmsService.sendOtpSms(v.getPhoneNumber(), otp);
+                twilioService.sendOtpSms(v.getPhoneNumber(), otp);
             }
 
             log.info("OTP sent successfully to {}", v.getEmail() != null ? v.getEmail() : v.getPhoneNumber());
@@ -149,7 +144,6 @@ public class AuthServiceImpl implements AuthService {
             );
 
         } catch (Exception ex) {
-            log.info("never enter into try block");
             return new ApiResponse<>(false, "Failed to send OTP, Please try again later.", null);
         }
     }
@@ -159,7 +153,6 @@ public class AuthServiceImpl implements AuthService {
         if (request == null || request.getOtp() == null ||
                 ((request.getEmail() == null || request.getEmail().isBlank()) &&
                         (request.getPhoneNumber() == null || request.getPhoneNumber().isBlank()))) {
-            log.debug("Email/Phone & OTP are required");
             return new ApiResponse<>(false, "Email/Phone & OTP are required", null);
         }
 
@@ -193,23 +186,23 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // OTP is valid → check if user or seller exists (by email or phone)
-            Optional<User> userOpt;
-            Optional<Seller> sellerOpt;
+            Optional<User> userOtp;
+            Optional<Seller> sellerOtp;
 
             if (v.getEmail() != null) {
-                userOpt = userRepository.findByEmail(v.getEmail());
-                sellerOpt = sellerRepository.findByEmail(v.getEmail());
+                userOtp = userRepository.findByEmail(v.getEmail());
+                sellerOtp = sellerRepository.findByEmail(v.getEmail());
             } else {
-                userOpt = userRepository.findByPhoneNumber(v.getPhoneNumber());
-                sellerOpt = sellerRepository.findByPhoneNumber(v.getPhoneNumber());
+                userOtp = userRepository.findByPhoneNumber(v.getPhoneNumber());
+                sellerOtp = sellerRepository.findByPhoneNumber(v.getPhoneNumber());
             }
 
-            if (userOpt.isPresent() || sellerOpt.isPresent()) {
-                UserRole role;
+            if (userOtp.isPresent() || sellerOtp.isPresent()) {
+                Role role;
                 String token;
 
-                if (userOpt.isPresent()) {
-                    User user = userOpt.get();
+                if (userOtp.isPresent()) {
+                    User user = userOtp.get();
                     role = user.getRole(); // could be ROLE_CUSTOMER or ROLE_ADMIN
 
                     Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -220,8 +213,8 @@ public class AuthServiceImpl implements AuthService {
                     token = jwtProvider.generateToken(authentication);
 
                 } else {
-                    Seller seller = sellerOpt.get();
-                    role = UserRole.ROLE_SELLER;
+                    Seller seller = sellerOtp.get();
+                    role = Role.ROLE_SELLER;
 
                     Authentication auth = new UsernamePasswordAuthenticationToken(
                             seller.getEmail(),
@@ -276,7 +269,7 @@ public class AuthServiceImpl implements AuthService {
                     .fullName(request.getFullName())
                     .email(email)
                     .phoneNumber(request.getPhoneNumber())
-                    .role(UserRole.ROLE_CUSTOMER)
+                    .role(Role.ROLE_CUSTOMER)
                     .password(passwordEncoder.encode(UUID.randomUUID().toString())) // random temp password
                     .isEmailVerified(Boolean.TRUE)
                     .build();
@@ -299,7 +292,7 @@ public class AuthServiceImpl implements AuthService {
             CustomerSignupResponse response = new CustomerSignupResponse();
             response.setMessage("Customer account created successfully");
             response.setToken(token);
-            response.setRole(UserRole.ROLE_CUSTOMER);
+            response.setRole(Role.ROLE_CUSTOMER);
 
             return new ApiResponse<>(true, "Customer account created successfully", response);
 
@@ -328,8 +321,7 @@ public class AuthServiceImpl implements AuthService {
                     .fullName(request.getFullName())
                     .email(email)
                     .phoneNumber(request.getPhoneNumber())
-                    .role(UserRole.ROLE_SELLER)
-                    .accountStatus(AccountStatus.ACTIVE)
+                    .role(Role.ROLE_SELLER)
                     .password(passwordEncoder.encode(UUID.randomUUID().toString())) // random temp password
                     .isEmailVerified(Boolean.TRUE)
                     .build();
@@ -350,7 +342,7 @@ public class AuthServiceImpl implements AuthService {
             SellerSignupResponse response = new SellerSignupResponse();
             response.setMessage("Seller account created successfully");
             response.setToken(token);
-            response.setRole(UserRole.ROLE_SELLER);
+            response.setRole(Role.ROLE_SELLER);
 
             return new ApiResponse<>(true, "Seller account created successfully", response);
 

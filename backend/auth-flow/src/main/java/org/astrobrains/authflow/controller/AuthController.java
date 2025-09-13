@@ -1,14 +1,14 @@
 package org.astrobrains.authflow.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.astrobrains.authflow.dto.ApiResponse;
-import org.astrobrains.authflow.dto.request.auth.CustomerSignupRequest;
-import org.astrobrains.authflow.dto.request.auth.SellerSignupRequest;
-import org.astrobrains.authflow.dto.request.otp.SendOTPRequest;
-import org.astrobrains.authflow.dto.request.otp.VerifyOTPRequest;
-import org.astrobrains.authflow.dto.response.auth.CustomerSignupResponse;
-import org.astrobrains.authflow.dto.response.auth.SellerSignupResponse;
-import org.astrobrains.authflow.dto.response.otp.SendOTPResponse;
+import org.astrobrains.authflow.response.ApiResponse;
+import org.astrobrains.authflow.request.auth.CustomerSignupRequest;
+import org.astrobrains.authflow.request.auth.SellerSignupRequest;
+import org.astrobrains.authflow.request.otp.SendOTPRequest;
+import org.astrobrains.authflow.request.otp.VerifyOTPRequest;
+import org.astrobrains.authflow.response.auth.CustomerSignupResponse;
+import org.astrobrains.authflow.response.auth.SellerSignupResponse;
+import org.astrobrains.authflow.response.otp.SendOTPResponse;
 import org.astrobrains.authflow.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

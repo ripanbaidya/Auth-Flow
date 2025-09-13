@@ -1,14 +1,17 @@
 package org.astrobrains.authflow.config.properties;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
 
-@Data
+@Getter @Setter
 @ConfigurationProperties(prefix = "application.cors")
 public class CorsProperties {
 
-    // List of allowed origins
+    /**
+     * List of all allowed origins.
+     */
     private List<String> allowedOrigins;
 }

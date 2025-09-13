@@ -2,13 +2,15 @@ package org.astrobrains.authflow.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.astrobrains.authflow.enums.AccountStatus;
-import org.astrobrains.authflow.enums.UserRole;
+import org.astrobrains.authflow.enums.Role;
 
 @Entity
-@Table(name = "sellers")
-@Getter @Setter
+@Table(name = "sellers", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "email"),
+        @UniqueConstraint(columnNames = "phoneNumber")
+})
 @Builder
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Seller {
@@ -18,15 +20,12 @@ public class Seller {
     private Long id;
 
     private String fullName;
-    private String phoneNumber;
     private String email;
+    private String phoneNumber;
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private UserRole role = UserRole.ROLE_SELLER;
+    private Role role = Role.ROLE_CUSTOMER;
 
-    @Column(name = "is_email_verified")
-    private Boolean isEmailVerified = false;
-
-    private AccountStatus accountStatus = AccountStatus.PENDING_VERIFICATION;
+    private Boolean isEmailVerified = Boolean.FALSE;
 }

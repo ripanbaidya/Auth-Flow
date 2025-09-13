@@ -15,7 +15,6 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class CorsConfig {
-
     private final CorsProperties corsProperties;
 
     /**

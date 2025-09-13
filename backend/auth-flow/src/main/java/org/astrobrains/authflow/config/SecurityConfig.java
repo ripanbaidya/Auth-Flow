@@ -10,18 +10,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final JwtTokenValidator jwtTokenValidator;
     private final CorsConfig corsConfig;
 
@@ -30,10 +26,6 @@ public class SecurityConfig {
      * It disables CSRF protection, configures CORS, and sets up session management.
      * It also configures the authorization rules for different endpoints.
      * It adds a JWT token validator filter before the basic authentication filter.
-     *
-     * @param http
-     * @return SecurityFilterChain
-     * @throws Exception
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -46,42 +38,18 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(
-                                "/test/**",  // test url's
-                                "/auth/**",   // login, signup, refresh
-                                "/health",   // actuator/health
-                                "/v3/api-docs/**",  // open AI
-                                "/swagger-ui/**" // swagger
-                        ).permitAll()
-
-                        // Seller-only endpoints
+                                "/test/**",
+                                        "/auth/**",
+                                        "/health",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**"
+                                ).permitAll()
                         .requestMatchers("/seller/**").hasRole("SELLER")
-
-                        // Admin-only endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                        // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtTokenValidator, BasicAuthenticationFilter.class);
+                .addFilterBefore(jwtTokenValidator, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    /**
-     * Password encoder bean, used for encoding and matching passwords.
-     * @return BCryptPasswordEncoder
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    /**
-     * This method creates a RestTemplate bean, which is used for making HTTP requests.
-     * @return RestTemplate
-     */
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
     }
 }

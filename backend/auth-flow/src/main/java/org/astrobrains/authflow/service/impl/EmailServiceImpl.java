@@ -1,9 +1,9 @@
-package org.astrobrains.authflow.service;
+package org.astrobrains.authflow.service.impl;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.astrobrains.authflow.service.EmailService;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -15,18 +15,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
-public class EmailService {
-
-    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
-
+public class EmailServiceImpl implements EmailService {
     private final JavaMailSender javaMailSender;
     private final SpringTemplateEngine templateEngine;
 
-    private static final String DEFAULT_FROM = "no-reply@onekit.com";
+    private static final String DEFAULT_FROM = "no-reply@astrobrains.com";
 
-    public void sendVerificationOtpEmail(String userEmail, String otp,
-                                         String subject, String text) {
+    @Override
+    public void sendVerificationOtpEmail(String userEmail, String otp, String subject, String text) {
         try {
             // Prepare Thymeleaf context
             Context context = new Context();

@@ -47,7 +47,7 @@ application:
   security:
     jwt:
       header: Authorization
-      secret-key: 0n2f3j320c2n029j302jc09h2309cn232in02j9nc02c20n20nfknkhf920kjnsvna
+      secret-key: ${JWT_SECRET_KEY}
       expiration: 86400000 # 24 hours
   cors:
     allowed-origins:

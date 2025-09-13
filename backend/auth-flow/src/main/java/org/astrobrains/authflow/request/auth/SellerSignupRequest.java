@@ -1,4 +1,4 @@
-package org.astrobrains.authflow.dto.request.auth;
+package org.astrobrains.authflow.request.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

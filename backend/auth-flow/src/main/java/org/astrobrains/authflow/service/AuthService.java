@@ -1,14 +1,16 @@
 package org.astrobrains.authflow.service;
 
 
-import org.astrobrains.authflow.dto.ApiResponse;
-import org.astrobrains.authflow.dto.request.auth.CustomerSignupRequest;
-import org.astrobrains.authflow.dto.request.auth.SellerSignupRequest;
-import org.astrobrains.authflow.dto.request.otp.SendOTPRequest;
-import org.astrobrains.authflow.dto.request.otp.VerifyOTPRequest;
-import org.astrobrains.authflow.dto.response.auth.CustomerSignupResponse;
-import org.astrobrains.authflow.dto.response.auth.SellerSignupResponse;
-import org.astrobrains.authflow.dto.response.otp.SendOTPResponse;
+import org.astrobrains.authflow.response.ApiResponse;
+import org.astrobrains.authflow.request.auth.CustomerSignupRequest;
+import org.astrobrains.authflow.request.auth.SellerSignupRequest;
+import org.astrobrains.authflow.request.otp.SendOTPRequest;
+import org.astrobrains.authflow.request.otp.VerifyOTPRequest;
+import org.astrobrains.authflow.response.auth.CustomerSignupResponse;
+import org.astrobrains.authflow.response.auth.SellerSignupResponse;
+import org.astrobrains.authflow.response.otp.SendOTPResponse;
+import org.astrobrains.authflow.response.otp.VerifyOTPFailResponse;
+import org.astrobrains.authflow.response.otp.VerifyOTPSuccessResponse;
 
 public interface AuthService {
 
@@ -25,8 +27,8 @@ public interface AuthService {
      *
      * @param request contains the OTP and user identifier.
      * @return standardized API response:
-     *         - {@link org.astrobrains.authflow.dto.response.otp.VerifyOTPSuccessResponse} if verification is successful.
-     *         - {@link org.astrobrains.authflow.dto.response.otp.VerifyOTPFailResponse} if verification fails.
+     *         - {@link VerifyOTPSuccessResponse} if verification is successful.
+     *         - {@link VerifyOTPFailResponse} if verification fails.
      */
     ApiResponse<?> verifyOTP(VerifyOTPRequest request);
 

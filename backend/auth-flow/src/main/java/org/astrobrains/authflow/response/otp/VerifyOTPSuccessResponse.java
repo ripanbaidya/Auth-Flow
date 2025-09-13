@@ -1,10 +1,10 @@
-package org.astrobrains.authflow.dto.response.otp;
+package org.astrobrains.authflow.response.otp;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.astrobrains.authflow.enums.UserRole;
+import org.astrobrains.authflow.enums.Role;
 
 @Data
 @Builder
@@ -12,5 +12,5 @@ import org.astrobrains.authflow.enums.UserRole;
 @AllArgsConstructor
 public class VerifyOTPSuccessResponse {
     private String token;
-    private UserRole role;
+    private Role role;
 }

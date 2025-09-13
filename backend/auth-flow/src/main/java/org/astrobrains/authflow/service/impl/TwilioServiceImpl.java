@@ -5,14 +5,14 @@ import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 import lombok.RequiredArgsConstructor;
 import org.astrobrains.authflow.config.properties.TwilioProperties;
-import org.astrobrains.authflow.service.TwilioSmsService;
+import org.astrobrains.authflow.service.TwilioService;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 @Service
 @RequiredArgsConstructor
-public class TwilioSmsServiceImpl implements TwilioSmsService {
+public class TwilioServiceImpl implements TwilioService {
     private final TemplateEngine templateEngine;
     private final TwilioProperties twilioProperties;
 
