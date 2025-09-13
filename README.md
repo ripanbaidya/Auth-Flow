@@ -1,4 +1,4 @@
-# Authentication System with OTP Verification (Email/Phone)
+## Authentication System with OTP Verification (Email/Phone)
 
 A **production-ready authentication and authorization system** for any application.
 It comes with OTP-based verification, JWT login, and role-based access control for **Customers** and **Sellers**.
